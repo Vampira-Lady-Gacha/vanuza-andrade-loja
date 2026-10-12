@@ -31,12 +31,25 @@ def token_csrf(request: Request) -> str:
     return token
 
 
+CABECALHO_ESTATICO = "x-exportar-estatico"
+
+
+def eh_exportacao(request: Request) -> bool:
+    """Pedido feito pelo exportador da vitrine estática (GitHub Pages)."""
+    return request.headers.get(CABECALHO_ESTATICO) == "1"
+
+
 def render(request: Request, sessao: Session, nome: str, contexto: dict[str, Any] | None = None, status: int = 200):
+    estatico = eh_exportacao(request)
+    url_publica = config.URL_PUBLICA or str(request.base_url).rstrip("/")
+    if estatico and request.headers.get("x-url-publica"):
+        url_publica = request.headers["x-url-publica"].rstrip("/")
     dados = {
         "request": request,
         "loja": ler_config(sessao),
         "csrf": token_csrf(request),
-        "url_publica": config.URL_PUBLICA or str(request.base_url).rstrip("/"),
+        "estatico": estatico,
+        "url_publica": url_publica,
         "aviso": request.session.pop("aviso", None),
     }
     dados.update(contexto or {})

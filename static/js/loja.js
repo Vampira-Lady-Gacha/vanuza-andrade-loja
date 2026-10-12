@@ -7,6 +7,11 @@
   "use strict";
 
   const CHAVE = "va-pedido";
+  // Na vitrine do GitHub Pages não há servidor: o pedido é calculado aqui e vai direto ao WhatsApp.
+  const ESTATICO = window.VA_ESTATICO === true;
+  const RAIZ = document.documentElement.dataset.raiz || "";
+  const reaisFmt = new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" });
+  const reais = (centavos) => reaisFmt.format(centavos / 100).replace(/ /g, " ");
   const SVG = "http://www.w3.org/2000/svg";
   const ORDEM_LINHAS = { P: "p", M: "m", G: "g", GG: "gg" };
 
@@ -291,13 +296,13 @@
       const qtd = Math.max(1, Math.min(v.estoque, parseInt(campoQtd?.value || "1", 10) || 1));
       const jaTem = Pedido.ler().find((i) => i.v === v.id)?.q || 0;
       if (jaTem + qtd > v.estoque) {
-        confirma.innerHTML = `Você já tem ${jaTem} no pedido e só temos ${v.estoque} no ${v.tamanho}. <a href="/pedido">Ver pedido</a>`;
+        confirma.innerHTML = `Você já tem ${jaTem} no pedido e só temos ${v.estoque} no ${v.tamanho}. <a href="${RAIZ}/pedido/">Ver pedido</a>`;
         confirma.classList.add("erro");
         return;
       }
       Pedido.por(v.id, qtd);
       confirma.classList.remove("erro");
-      confirma.innerHTML = `${qtd > 1 ? qtd + " peças" : "Peça"} no pedido (${v.cor}, ${v.tamanho}). <a href="/pedido">Ver pedido</a>`;
+      confirma.innerHTML = `${qtd > 1 ? qtd + " peças" : "Peça"} no pedido (${v.cor}, ${v.tamanho}). <a href="${RAIZ}/pedido/">Ver pedido</a>`;
     });
 
     refletirCor();
@@ -331,10 +336,72 @@
   // ------------------------------------------------------------ página do pedido
 
   async function postar(url, corpo) {
-    const resp = await fetch(url, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(corpo) });
+    const resp = await fetch(RAIZ + url, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(corpo) });
     const dados = await resp.json().catch(() => ({}));
     if (!resp.ok) throw new Error(dados.erro || "Não foi possível falar com a loja. Confira a internet e tente de novo.");
     return dados;
+  }
+
+  // ------------------------------------------------------------ pedido sem servidor (GitHub Pages)
+
+  let catalogo = null;
+  async function catalogoEstatico() {
+    if (!catalogo) {
+      const resp = await fetch(`${RAIZ}/catalogo.json`);
+      if (!resp.ok) throw new Error("Não foi possível carregar os preços. Confira a internet e tente de novo.");
+      catalogo = await resp.json();
+    }
+    return catalogo;
+  }
+
+  // Mesma regra do servidor (app/servicos.py, cotar)
+  function cotarLocal(itens, cat) {
+    const minimo = parseInt(cat.loja.atacado_minimo, 10) || 1;
+    const linhas = [];
+    const removidos = [];
+    for (const i of itens) {
+      const v = cat.variantes[String(i.v)];
+      if (!v) { removidos.push(i.v); continue; }
+      linhas.push({ variante_id: i.v, ...v, quantidade: Math.min(i.q, 999), disponivel: v.estoque, preco: v.preco_varejo });
+    }
+    const quantidade = linhas.reduce((s, l) => s + l.quantidade, 0);
+    const atacado = quantidade >= minimo && linhas.some((l) => l.preco_atacado != null);
+    let totalVarejo = 0;
+    for (const l of linhas) {
+      totalVarejo += l.quantidade * l.preco_varejo;
+      if (atacado && l.preco_atacado != null) l.preco = l.preco_atacado;
+      l.subtotal = l.quantidade * l.preco;
+      l.subtotal_fmt = reais(l.subtotal);
+      l.preco_fmt = reais(l.preco);
+    }
+    const total = linhas.reduce((s, l) => s + l.subtotal, 0);
+    return {
+      linhas, removidos, quantidade, atacado,
+      minimo_atacado: minimo,
+      faltam_para_atacado: Math.max(0, minimo - quantidade),
+      total, total_fmt: reais(total),
+      economia_fmt: atacado ? reais(totalVarejo - total) : "",
+    };
+  }
+
+  // Mesmo formato de app/servicos.py, mensagem_whatsapp
+  function mensagemLocal(c, dados, loja) {
+    const entregas = { retirada: "Retirada na loja", excursao: "Excursão", transportadora: "Transportadora" };
+    const linhas = [`Olá, ${loja.nome_loja}! Quero fazer este pedido:`, ""];
+    for (const l of c.linhas) {
+      const ref = l.referencia ? ` (ref. ${l.referencia})` : "";
+      linhas.push(`• ${l.quantidade}x ${l.peca}${ref} · ${l.cor} · ${l.tamanho} · ${l.preco_fmt} cada`);
+    }
+    linhas.push(
+      "",
+      `*Total: ${c.total_fmt}* (${c.quantidade} peças, preço de ${c.atacado ? "atacado" : "varejo"})`,
+      `Entrega: ${entregas[dados.entrega]}${dados.detalhe_entrega ? " · " + dados.detalhe_entrega.trim() : ""}`,
+      `Nome: ${dados.nome.trim()}`,
+      `WhatsApp: ${dados.whatsapp.trim()}`,
+    );
+    if (dados.cidade?.trim()) linhas.push(`Cidade: ${dados.cidade.trim()}`);
+    if (dados.observacao?.trim()) linhas.push(`Obs.: ${dados.observacao.trim()}`);
+    return linhas.join("\n");
   }
 
   function prepararPaginaPedido(secao) {
@@ -370,8 +437,8 @@
       for (const l of cotacao.linhas) {
         const no = modelo.content.firstElementChild.cloneNode(true);
         const $ = (s) => no.querySelector(s);
-        no.querySelectorAll("[data-l-link]").forEach((a) => (a.href = `/peca/${l.slug}`));
-        if (l.foto) $("[data-l-foto]").src = l.foto;
+        no.querySelectorAll("[data-l-link]").forEach((a) => (a.href = `${RAIZ}/peca/${l.slug}/`));
+        if (l.foto) $("[data-l-foto]").src = RAIZ + l.foto;
         $("[data-l-nome]").textContent = l.peca;
         $("[data-l-amostra]").style.setProperty("--amostra", l.cor_hex);
         $("[data-l-cor]").textContent = l.cor;
@@ -419,7 +486,9 @@
       const itens = Pedido.ler();
       if (!itens.length) { cotacao = null; render(); return; }
       try {
-        cotacao = await postar("/api/cotacao", { itens: itens.map((i) => ({ variante_id: i.v, quantidade: i.q })) });
+        cotacao = ESTATICO
+          ? cotarLocal(itens, await catalogoEstatico())
+          : await postar("/api/cotacao", { itens: itens.map((i) => ({ variante_id: i.v, quantidade: i.q })) });
         if (cotacao.removidos.length) {
           Pedido.gravar(itens.filter((i) => !cotacao.removidos.includes(i.v)));
         }
@@ -463,6 +532,20 @@
 
       const botao = q("[data-enviar]");
       const original = botao.innerHTML;
+      if (ESTATICO) {
+        const cat = await catalogoEstatico();
+        const c = cotarLocal(Pedido.ler(), cat);
+        const falta = c.linhas.find((l) => l.quantidade > l.disponivel);
+        if (falta) {
+          erro.textContent = `${falta.peca} (${falta.cor}, ${falta.tamanho}): só temos ${falta.disponivel} em estoque.`;
+          return;
+        }
+        const url = `https://wa.me/${cat.loja.whatsapp.replace(/\D/g, "")}?text=${encodeURIComponent(mensagemLocal(c, dados, cat.loja))}`;
+        Pedido.limpar();
+        window.location.href = url;
+        return;
+      }
+
       botao.disabled = true;
       botao.innerHTML = '<span class="carregando" aria-hidden="true"></span> Registrando o pedido…';
       try {

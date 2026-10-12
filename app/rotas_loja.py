@@ -208,6 +208,31 @@ def api_criar_pedido(entrada: PedidoEntrada, sessao: Session = Depends(obter_ses
     }
 
 
+@roteador.get("/api/catalogo.json")
+def api_catalogo(sessao: Session = Depends(obter_sessao)):
+    """Preços e estoque de todas as variantes, para a vitrine estática montar o pedido sozinha."""
+    loja = ler_config(sessao)
+    variantes = {}
+    for p in sessao.scalars(consulta_pecas()):
+        for v in p.variantes:
+            variantes[str(v.id)] = {
+                "peca": p.nome,
+                "slug": p.slug,
+                "referencia": p.referencia,
+                "foto": f"/media/{p.foto_capa.arquivo}" if p.foto_capa else None,
+                "cor": v.cor,
+                "cor_hex": v.cor_hex,
+                "tamanho": v.tamanho,
+                "estoque": v.estoque,
+                "preco_varejo": p.preco_varejo,
+                "preco_atacado": p.preco_atacado,
+            }
+    return {
+        "loja": {k: loja[k] for k in ("nome_loja", "whatsapp", "atacado_minimo")},
+        "variantes": variantes,
+    }
+
+
 # ---------------------------------------------------------------- SEO
 
 

@@ -70,7 +70,7 @@
       <button class="botao zap largo" type="submit" data-enviar>
         <svg class="ico" aria-hidden="true"><use href="#i-zap"/></svg> Enviar pedido pelo WhatsApp
       </button>
-      <p class="nota" style="margin:0">Ao enviar, as peças ficam reservadas para você.</p>
+      <p class="nota" style="margin:0">{% if estatico %}A vendedora confirma o estoque com você no WhatsApp.{% else %}Ao enviar, as peças ficam reservadas para você.{% endif %}</p>
     </form>
   </div>
 <template data-modelo-linha>

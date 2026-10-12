@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="pt-BR">
+<html lang="pt-BR"{% if estatico %} class="estatico"{% endif %}>
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
@@ -67,11 +67,12 @@
       </div>
       <div class="base">
         <span>© {{ loja.nome_loja }}</span>
-        <a href="/admin">Área da loja</a>
+        {% if not estatico %}<a href="/admin">Área da loja</a>{% endif %}
       </div>
     </div>
   </footer>
 
+  {% if estatico %}<script>window.VA_ESTATICO = true;</script>{% endif %}
   <script src="/static/js/loja.js?v=8" defer></script>
   {% block scripts %}{% endblock %}
 </body>

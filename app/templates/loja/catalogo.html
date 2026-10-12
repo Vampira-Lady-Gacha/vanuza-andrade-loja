@@ -21,6 +21,7 @@
       </nav>
       {% endif %}
       {% if filtro.categoria %}<input type="hidden" name="categoria" value="{{ filtro.categoria }}">{% endif %}
+      {% if not estatico %}
       <div class="linha">
         <div class="busca">
           <label class="sr" for="busca">Buscar peça</label>
@@ -39,6 +40,7 @@
           <option value="maior-preco" {% if filtro.ordem == 'maior-preco' %}selected{% endif %}>Maior preço</option>
         </select>
       </div>
+      {% endif %}
     </form>
 
     {% if pecas %}

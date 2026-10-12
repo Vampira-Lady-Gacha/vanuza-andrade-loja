@@ -65,6 +65,20 @@ Comando de início: `uv run uvicorn app.main:app --host 0.0.0.0 --port $PORT`.
 
 Faça backup da pasta `dados/` (banco `loja.db` e `uploads/`).
 
+## Vitrine no GitHub Pages
+
+O GitHub Pages só serve arquivos estáticos, então ele recebe uma **cópia da vitrine**: início, catálogo, categorias, peças, como comprar e pedido. Lá o pedido é calculado no navegador e vai direto ao WhatsApp; não há painel, registro de pedido nem reserva de estoque. Preços e estoque são os do momento em que a cópia foi gerada.
+
+Endereço: https://vampira-lady-gacha.github.io/vanuza-andrade-loja/
+
+Para atualizar depois de mudar peças no painel, gere a cópia a partir da loja no Render (ou da local) e publique:
+
+```bash
+uv run python scripts/exportar_pages.py --origem https://vanuza-andrade-loja.onrender.com --publicar
+```
+
+Sem `--publicar`, só gera a pasta `site/` para conferir. O envio vai para o branch `gh-pages`, que o Pages publica sozinho.
+
 ## Estrutura
 
 | Arquivo | Faz |
@@ -74,6 +88,7 @@ Faça backup da pasta `dados/` (banco `loja.db` e `uploads/`).
 | `app/rotas_loja.py` | Páginas públicas e API do pedido (`/api/cotacao`, `/api/pedidos`) |
 | `app/rotas_admin.py` | Painel |
 | `app/seed.py` | Cria banco, usuário do painel e catálogo inicial |
+| `scripts/exportar_pages.py` | Gera e publica a vitrine estática do GitHub Pages |
 | `app/templates/` | Páginas (Jinja2) |
 | `static/` | CSS, JavaScript, logo e fotos iniciais |
 

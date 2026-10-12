@@ -175,3 +175,15 @@ def test_mensagem_whatsapp_formata_entrega(sessao, cliente):
     pedido = sessao.scalar(select(Pedido))
     texto = mensagem_whatsapp(pedido, {"nome_loja": "Vanuza Andrade"})
     assert "Entrega: Excursão · Excursão Bahia, box 12" in texto
+
+
+def test_catalogo_json_e_modo_estatico(cliente, sessao):
+    dados = cliente.get("/api/catalogo.json").json()
+    v = _variante(sessao)
+    item = dados["variantes"][str(v.id)]
+    assert item["preco_varejo"] == 15990 and item["preco_atacado"] == 11990
+    assert dados["loja"]["atacado_minimo"] == "6"
+
+    estatica = cliente.get("/pedido", headers={"X-Exportar-Estatico": "1"}).text
+    assert "window.VA_ESTATICO = true" in estatica and 'href="/admin"' not in estatica
+    assert "window.VA_ESTATICO" not in cliente.get("/pedido").text
