@@ -1,0 +1,55 @@
+{% extends "admin/base.html" %}
+{% block titulo %}Pedido {{ pedido.codigo }}{% endblock %}
+
+{% block conteudo %}
+<div class="painel-cabeca">
+  <h1>Pedido {{ pedido.codigo }} <span class="etiqueta {{ pedido.status }}" style="vertical-align:middle; font-family:var(--f-texto)">{{ STATUS_PEDIDO[pedido.status] }}</span></h1>
+  <div class="acoes">
+    <a class="botao linha" href="/admin/pedidos">Voltar</a>
+    <a class="botao zap" href="{{ link_whatsapp(pedido.whatsapp if pedido.whatsapp.startswith('55') else '55' ~ pedido.whatsapp, 'Olá, ' ~ pedido.nome.split(' ')[0] ~ '! Aqui é da ' ~ loja.nome_loja ~ ', sobre o seu pedido ' ~ pedido.codigo ~ '.') }}" target="_blank" rel="noopener">
+      <svg class="ico" aria-hidden="true"><use href="#i-zap"/></svg> Falar com a cliente</a>
+  </div>
+</div>
+
+<section class="bloco">
+  <h2>Situação</h2>
+  <form class="troca-status" method="post" action="/admin/pedidos/{{ pedido.id }}/status">
+    <input type="hidden" name="csrf" value="{{ csrf }}">
+    {% for chave, nome in STATUS_PEDIDO.items() %}
+      {% if chave != pedido.status %}
+      <button class="botao {{ 'perigo' if chave == 'cancelado' else 'linha' }} pequeno" type="submit" name="status" value="{{ chave }}"
+        {% if chave == 'cancelado' %}data-confirmar-botao="Cancelar o pedido {{ pedido.codigo }}? As peças voltam para o estoque."{% endif %}>
+        Marcar como {{ nome | lower }}</button>
+      {% endif %}
+    {% endfor %}
+  </form>
+  <p style="margin:0.9rem 0 0; color:var(--tinta-2); font-size:0.92rem">Cancelar devolve as peças ao estoque. Reabrir um pedido cancelado tira as peças de novo.</p>
+</section>
+
+<section class="bloco">
+  <h2>Cliente</h2>
+  <dl class="dados-cliente">
+    <dt>Nome</dt><dd>{{ pedido.nome }}</dd>
+    <dt>WhatsApp</dt><dd>{{ pedido.whatsapp | telefone }}</dd>
+    {% if pedido.cidade %}<dt>Cidade</dt><dd>{{ pedido.cidade }}</dd>{% endif %}
+    <dt>Entrega</dt><dd>{{ ENTREGAS[pedido.entrega] }}{% if pedido.detalhe_entrega %} · {{ pedido.detalhe_entrega }}{% endif %}</dd>
+    {% if pedido.observacao %}<dt>Observação</dt><dd>{{ pedido.observacao }}</dd>{% endif %}
+    <dt>Feito em</dt><dd>{{ pedido.criado_em.strftime('%d/%m/%Y às %H:%M') }}</dd>
+  </dl>
+</section>
+
+<section class="bloco">
+  <h2>Peças <small>preço de {{ 'atacado' if pedido.atacado else 'varejo' }}</small></h2>
+  <div class="tabela-rolagem">
+    <table class="tabela itens-pedido">
+      <thead><tr><th>Peça</th><th>Cor · tamanho</th><th class="dir">Qtd.</th><th class="dir">Unitário</th><th class="dir">Subtotal</th></tr></thead>
+      <tbody>
+      {% for i in pedido.itens %}
+        <tr><td>{{ i.nome }}{% if i.referencia %}<br><small style="color:var(--tinta-2)">{{ i.referencia }}</small>{% endif %}</td><td>{{ i.cor }} · {{ i.tamanho }}</td><td class="dir">{{ i.quantidade }}</td><td class="dir">{{ i.preco_unitario | reais }}</td><td class="dir">{{ i.subtotal | reais }}</td></tr>
+      {% endfor %}
+      </tbody>
+      <tfoot><tr><td colspan="2"><b>Total</b></td><td class="dir"><b>{{ pedido.quantidade_pecas }}</b></td><td></td><td class="dir"><b>{{ pedido.total | reais }}</b></td></tr></tfoot>
+    </table>
+  </div>
+</section>
+{% endblock %}

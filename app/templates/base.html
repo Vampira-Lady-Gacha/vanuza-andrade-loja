@@ -1,0 +1,78 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>{% block titulo %}{{ loja.nome_loja }} · Viscose e viscolinho premium{% endblock %}</title>
+  <meta name="description" content="{% block descricao %}{{ loja.bordao }}. Fabricação própria de viscose e viscolinho premium. Varejo e atacado no {{ loja.endereco }}.{% endblock %}">
+  <meta name="theme-color" content="#f1f1ee">
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="{{ loja.nome_loja }}">
+  <meta property="og:title" content="{{ self.titulo() }}">
+  <meta property="og:description" content="{{ self.descricao() }}">
+  {% block og_imagem %}<meta property="og:image" content="{{ url_publica }}/static/img/logo-instagram.jpg">{% endblock %}
+  <link rel="icon" href="/static/img/logo-instagram.jpg">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,400..800&family=Bodoni+Moda:ital,opsz,wght@0,6..96,400..700;1,6..96,400..700&display=swap">
+  <link rel="stylesheet" href="/static/css/loja.css?v=9">
+  {% block cabeca %}{% endblock %}
+</head>
+<body>
+  <a class="pular" href="#conteudo">Pular para o conteúdo</a>
+  {% include "_icones.html" %}
+
+  <header class="topo faixa">
+    <div class="miolo">
+      <a class="marca" href="/" aria-label="{{ loja.nome_loja }}, página inicial">
+        <img src="/static/img/logo-instagram.jpg" alt="" width="40" height="40">
+        <span>{{ loja.nome_loja }}</span>
+      </a>
+      <nav class="menu" aria-label="Principal">
+        <a href="/catalogo" {% if request.url.path.startswith('/catalogo') or request.url.path.startswith('/peca') %}aria-current="page"{% endif %}>Catálogo</a>
+        <a class="some-celular" href="/como-comprar" {% if request.url.path == '/como-comprar' %}aria-current="page"{% endif %}>Como comprar</a>
+        <a class="botao-pedido" href="/pedido" data-botao-pedido aria-label="Pedido">
+          <svg class="ico" aria-hidden="true"><use href="#i-sacola"/></svg>
+          <span class="rotulo">Pedido</span>
+          <span class="contador" data-contador data-zero aria-hidden="true">0</span>
+        </a>
+      </nav>
+    </div>
+  </header>
+
+  <main id="conteudo">
+    {% block conteudo %}{% endblock %}
+  </main>
+
+  <footer class="rodape faixa">
+    <div class="miolo">
+      <div>
+        <p class="marca-rodape">{{ loja.nome_loja }}</p>
+        <p>{{ loja.bordao }}.</p>
+        <p>Fabricação própria de viscose e viscolinho premium.</p>
+      </div>
+      <div>
+        <p class="nota">Loja física</p>
+        <p>{{ loja.endereco }}</p>
+        <p>{{ loja.cidade }}</p>
+        {% if loja.horario %}<p>{{ loja.horario }}</p>{% endif %}
+      </div>
+      <div>
+        <p class="nota">Fale com a gente</p>
+        <ul>
+          <li><a href="{{ link_whatsapp(loja.whatsapp) }}" rel="noopener" target="_blank">WhatsApp {{ loja.whatsapp | telefone }}</a></li>
+          <li><a href="https://www.instagram.com/{{ loja.instagram }}/" rel="noopener" target="_blank">Instagram @{{ loja.instagram }}</a></li>
+          <li><a href="/como-comprar">Como comprar e atacado</a></li>
+        </ul>
+      </div>
+      <div class="base">
+        <span>© {{ loja.nome_loja }}</span>
+        <a href="/admin">Área da loja</a>
+      </div>
+    </div>
+  </footer>
+
+  <script src="/static/js/loja.js?v=8" defer></script>
+  {% block scripts %}{% endblock %}
+</body>
+</html>

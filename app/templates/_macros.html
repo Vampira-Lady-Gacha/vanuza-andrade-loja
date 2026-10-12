@@ -1,0 +1,103 @@
+{# Peças desenhadas como molde: a foto com os contornos graduados de cada tamanho. #}
+
+{% macro classe_linha(t) %}l-{{ LINHAS_TAMANHO.get(t, 'x') }}{% endmacro %}
+
+{% macro amostra_linha(t) -%}
+<svg viewBox="0 0 40 8" aria-hidden="true"><line x1="1" y1="4" x2="39" y2="4"
+  {%- if t == 'M' %} stroke-dasharray="7 4"{% elif t == 'G' %} stroke-dasharray="11 3.5 2 3.5"{% elif t == 'GG' %} stroke-dasharray="0.5 4.5" stroke-linecap="round" stroke-width="3"{% elif t not in LINHAS_TAMANHO %} stroke-dasharray="3 3"{% endif %}/></svg>
+{%- endmacro %}
+
+{% macro molde(peca, foto=None, classe='', prioridade=False, preco_margem='', apresentar=False) %}
+{% set f = foto or peca.foto_capa %}
+<div class="molde {{ classe }}" data-molde
+     data-tamanhos="{{ peca.tamanhos | join(',') }}"
+     data-disponiveis="{{ peca.tamanhos_disponiveis() | join(',') }}"
+     data-rotulo="{{ (peca.referencia ~ ' · ' if peca.referencia else '') ~ (peca.tecido or peca.nome) }}"
+     {% if preco_margem %}data-preco="{{ preco_margem }}"{% endif %} {% if apresentar %}data-apresentar{% endif %}>
+  <div class="foto">
+    {% if f %}
+    <img src="/media/{{ f.arquivo }}" alt="{{ peca.nome }}{% if peca.tecido %}, em {{ peca.tecido | lower }}{% endif %}"
+         {% if prioridade %}fetchpriority="high"{% else %}loading="lazy"{% endif %} decoding="async" width="640" height="800" data-foto-principal>
+    {% endif %}
+  </div>
+</div>
+{% endmacro %}
+
+{% macro precos(peca, minimo) %}
+<p class="precos num">
+  <span class="varejo">{{ peca.preco_varejo | reais }}</span>
+  {% if peca.preco_atacado %}<span class="atacado">atacado <b>{{ peca.preco_atacado | reais }}</b> a partir de {{ minimo }} peças</span>{% endif %}
+</p>
+{% endmacro %}
+
+{% macro peca_card(peca, loja) %}
+<article class="peca-card">
+  <a href="/peca/{{ peca.slug }}" aria-label="{{ peca.nome }}" tabindex="-1">{{ molde(peca, classe='pequeno') }}</a>
+  <div class="anotacao">
+    <a class="nome" href="/peca/{{ peca.slug }}">{{ peca.nome }}</a>
+    {{ precos(peca, loja.atacado_minimo) }}
+    <span class="nota">{{ peca.categoria.nome if peca.categoria else 'Peça' }}{% if peca.tecido %} · {{ peca.tecido }}{% endif %}</span>
+  </div>
+  {% set disp = peca.tamanhos_disponiveis() %}
+  <p class="disp" aria-label="Tamanhos">
+    {% for t in peca.tamanhos %}
+    <span class="{{ classe_linha(t) }}{% if t not in disp %} esgotado{% endif %}">{{ amostra_linha(t) }}{{ t }}{% if t not in disp %}<span class="sr"> esgotado</span>{% endif %}</span>
+    {% endfor %}
+  </p>
+</article>
+{% endmacro %}
+
+{% macro legenda_tamanhos(peca, nome='tamanho') %}
+{% set disp = peca.tamanhos_disponiveis() %}
+<fieldset class="grade">
+  <legend class="nota">Tamanho · escolha pela linha do molde</legend>
+  {% for t in peca.tamanhos %}
+  <div class="tam {{ classe_linha(t) }}">
+    <input type="radio" name="{{ nome }}" id="{{ nome }}-{{ peca.id }}-{{ loop.index }}" value="{{ t }}" {% if t not in disp %}disabled{% endif %} data-tamanho>
+    <label for="{{ nome }}-{{ peca.id }}-{{ loop.index }}">{{ amostra_linha(t) }}<span class="t">{{ t }}</span>{% if t not in disp %}<span class="sr"> (esgotado)</span>{% endif %}</label>
+  </div>
+  {% endfor %}
+</fieldset>
+{% endmacro %}
+
+{% macro legenda_cores(peca, nome='cor') %}
+{% if peca.cores | length > 1 %}
+<fieldset class="cores">
+  <legend class="nota">Cor</legend>
+  {% for cor, hexa in peca.cores %}
+  <div class="cor">
+    <input type="radio" name="{{ nome }}" id="{{ nome }}-{{ peca.id }}-{{ loop.index }}" value="{{ cor }}" {% if loop.first %}checked{% endif %} data-cor>
+    <label for="{{ nome }}-{{ peca.id }}-{{ loop.index }}"><i style="--amostra: {{ hexa }}"></i>{{ cor }}</label>
+  </div>
+  {% endfor %}
+</fieldset>
+{% else %}
+{% for cor, hexa in peca.cores %}
+<input type="hidden" name="{{ nome }}" value="{{ cor }}" data-cor-unica>
+<p class="nota" style="margin:0">Cor · <span style="color:var(--tinta)">{{ cor }}</span></p>
+{% endfor %}
+{% endif %}
+{% endmacro %}
+
+{# Formulário de compra: variantes em JSON para o JS escolher a variante pelo par cor + tamanho #}
+{% macro form_compra(peca, loja, quantidade=True) %}
+<form class="compra" data-compra data-preco="{{ peca.preco_varejo | reais }}">
+  <script type="application/json" data-grade>{{ peca.variantes_json | tojson }}</script>
+  {{ legenda_cores(peca) }}
+  {{ legenda_tamanhos(peca) }}
+  <p class="estoque-aviso" data-estoque-aviso aria-live="polite"></p>
+  <div class="linha-acao">
+    {% if quantidade %}
+    <div class="qtd" data-qtd>
+      <button type="button" data-menos aria-label="Diminuir quantidade"><svg class="ico"><use href="#i-menos"/></svg></button>
+      <input type="number" inputmode="numeric" min="1" max="99" value="1" aria-label="Quantidade" data-quantidade>
+      <button type="button" data-mais aria-label="Aumentar quantidade"><svg class="ico"><use href="#i-mais"/></svg></button>
+    </div>
+    {% endif %}
+    <button class="botao" type="submit" data-por>
+      <svg class="ico" aria-hidden="true"><use href="#i-sacola"/></svg> Pôr no pedido
+    </button>
+  </div>
+  <p class="confirma" data-confirma role="status"></p>
+</form>
+{% endmacro %}

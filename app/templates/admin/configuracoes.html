@@ -1,0 +1,25 @@
+{% extends "admin/base.html" %}
+{% block titulo %}Loja{% endblock %}
+
+{% block conteudo %}
+<div class="painel-cabeca"><h1>Dados da loja</h1></div>
+
+<form class="bloco" method="post" action="/admin/configuracoes">
+  <input type="hidden" name="csrf" value="{{ csrf }}">
+  <div class="form-grade">
+    {% for chave, rotulo in rotulos.items() %}
+      {% if chave.startswith('texto_') %}
+      <label class="campo inteiro"><span>{{ rotulo }}</span><textarea class="entrada" name="{{ chave }}" rows="3">{{ loja[chave] }}</textarea></label>
+      {% elif chave == 'atacado_minimo' %}
+      <label class="campo"><span>{{ rotulo }}</span><input class="entrada" type="number" min="1" max="999" name="{{ chave }}" value="{{ loja[chave] }}"></label>
+      {% elif chave == 'whatsapp' %}
+      <label class="campo"><span>{{ rotulo }}</span><input class="entrada" name="{{ chave }}" inputmode="tel" value="{{ loja[chave] }}" placeholder="5562999999999">
+        <small><a href="{{ link_whatsapp(loja.whatsapp, 'Teste do site') }}" target="_blank" rel="noopener">Testar o número no WhatsApp</a></small></label>
+      {% else %}
+      <label class="campo"><span>{{ rotulo }}</span><input class="entrada" name="{{ chave }}" value="{{ loja[chave] }}"></label>
+      {% endif %}
+    {% endfor %}
+  </div>
+  <p style="margin:1.25rem 0 0"><button class="botao" type="submit">Salvar</button></p>
+</form>
+{% endblock %}

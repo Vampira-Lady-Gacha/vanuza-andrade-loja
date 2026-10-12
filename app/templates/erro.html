@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+
+{% block titulo %}{{ 'Página não encontrada' if erro.status_code == 404 else 'Algo deu errado' }} · {{ loja.nome_loja }}{% endblock %}
+
+{% block conteudo %}
+<section class="secao faixa quadriculado">
+  <div class="miolo erro-pagina">
+    {% if erro.status_code == 404 %}
+    <h1 class="titulo-2">Essa peça <em>saiu do molde.</em></h1>
+    <p class="texto" style="margin:0">A página não existe mais ou o endereço está errado. A peça pode ter esgotado ou mudado de nome.</p>
+    {% else %}
+    <h1 class="titulo-2">Algo deu <em>errado.</em></h1>
+    <p class="texto" style="margin:0">{{ erro.detail }}</p>
+    {% endif %}
+    <p><a class="botao" href="/catalogo">Ver o catálogo</a></p>
+  </div>
+</section>
+{% endblock %}

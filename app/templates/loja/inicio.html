@@ -1,0 +1,109 @@
+{% extends "base.html" %}
+{% from "_macros.html" import molde, precos, peca_card, form_compra %}
+
+{% block og_imagem %}{% if destaque and destaque.foto_capa %}<meta property="og:image" content="{{ url_publica }}/media/{{ destaque.foto_capa.arquivo }}">{% else %}{{ super() }}{% endif %}{% endblock %}
+
+{% block conteudo %}
+<section class="abertura faixa quadriculado" aria-labelledby="titulo-abertura">
+  <div class="miolo">
+    <div class="abertura-texto">
+    <h1 class="titulo-1" id="titulo-abertura">
+      <span>Conforto</span>
+      <span class="recuo"><em>e estilo</em></span>
+    </h1>
+
+    <div class="apresenta">
+      <p>Vestidos de viscose e viscolinho premium, cortados e costurados pela própria {{ loja.nome_loja }}. Escolha o tamanho pela linha do molde e mande o pedido pronto no WhatsApp.</p>
+      <p><a class="link-seta" href="/catalogo">Ver todas as peças <svg class="ico" aria-hidden="true"><use href="#i-seta"/></svg></a></p>
+    </div>
+
+    <p class="local nota">
+      <svg class="ico" aria-hidden="true"><use href="#i-pino"/></svg>
+      <span>{{ loja.endereco }} · {{ loja.cidade }} · varejo e atacado</span>
+    </p>
+    </div>
+
+    {% if destaque %}
+    <div class="peca-destaque">
+      {% set margem = 'Varejo ' ~ (destaque.preco_varejo | reais) ~ ((' · atacado ' ~ (destaque.preco_atacado | reais) ~ ' a partir de ' ~ loja.atacado_minimo ~ ' peças') if destaque.preco_atacado else '') %}
+      <a class="peca-foto" href="/peca/{{ destaque.slug }}" tabindex="-1" aria-hidden="true">{{ molde(destaque, prioridade=True, preco_margem=margem, apresentar=True) }}</a>
+      <div class="compra-destaque">
+        <div class="anotacao" style="padding-inline: var(--folga, 34px); margin-bottom: 1.25rem">
+          <a class="nome" href="/peca/{{ destaque.slug }}" style="font-size: clamp(1.7rem, 3vw, 2.2rem)">{{ destaque.nome }}</a>
+          {{ precos(destaque, loja.atacado_minimo) }}
+        </div>
+        {{ form_compra(destaque, loja, quantidade=False) }}
+      </div>
+    </div>
+    {% endif %}
+  </div>
+</section>
+
+{% if pecas %}
+<section class="secao faixa" aria-labelledby="titulo-colecao">
+  <div class="miolo">
+    <div class="cabeca-secao">
+      <h2 class="titulo-2" id="titulo-colecao">Na arara <em>agora</em></h2>
+      <p>As linhas em volta de cada peça são os tamanhos que temos em estoque: <span class="nota" style="color:var(--linha-p)">P</span> contínua, <span class="nota" style="color:var(--linha-m)">M</span> tracejada, <span class="nota" style="color:var(--linha-g)">G</span> traço e ponto, <span class="nota" style="color:var(--linha-gg)">GG</span> pontilhada.</p>
+    </div>
+    <div class="folha-pecas encaixe">
+      {% for p in pecas %}{{ peca_card(p, loja) }}{% endfor %}
+    </div>
+    <p style="margin-top: clamp(2rem, 5vw, 4rem)"><a class="botao linha" href="/catalogo">Ver o catálogo completo <svg class="ico" aria-hidden="true"><use href="#i-seta"/></svg></a></p>
+  </div>
+</section>
+{% endif %}
+
+<section class="secao faixa fabrica" aria-labelledby="titulo-fabrica">
+  <div class="miolo">
+    <h2 class="palavra" id="titulo-fabrica">Visco<span>linho</span></h2>
+    <div>
+      <p class="texto" style="margin-bottom: 1.75rem">A {{ loja.nome_loja }} fabrica as próprias peças. O tecido é escolhido pelo caimento e pelo toque: viscose e viscolinho leves, que não pesam no calor de Goiânia.</p>
+      <dl class="ficha">
+        <div><dt class="nota">Tecidos</dt><dd>Viscose e viscolinho premium</dd></div>
+        <div><dt class="nota">Fabricação</dt><dd>Própria, da modelagem à costura</dd></div>
+        <div><dt class="nota">Grade</dt><dd>P, M, G e GG</dd></div>
+        <div><dt class="nota">Vendas</dt><dd>Varejo e atacado, na loja e pelo WhatsApp</dd></div>
+      </dl>
+    </div>
+  </div>
+</section>
+
+<section class="secao faixa atacado-bloco" aria-labelledby="titulo-atacado">
+  <div class="miolo">
+    <div>
+      <h2 class="titulo-2" id="titulo-atacado">Revende? <em>Leve no atacado.</em></h2>
+      <p class="texto" style="margin-top:1.25rem">{{ loja.texto_atacado }}</p>
+    </div>
+    <div class="exemplo">
+      <div class="fita" style="--pecas: {{ loja.atacado_minimo }}; --tem: {{ loja.atacado_minimo }}" aria-hidden="true">
+        <div class="marcas">{% for i in range(loja.atacado_minimo | int) %}<span>{{ i + 1 }}</span>{% endfor %}</div>
+        <div class="preenche"></div>
+      </div>
+      <p class="nota" style="margin:0">Fita métrica do pedido · {{ loja.atacado_minimo }} peças sortidas</p>
+      <p style="margin:0; color: var(--tinta-2)">Ao chegar em {{ loja.atacado_minimo }} peças no pedido, o preço de atacado entra sozinho em todas as peças que têm preço de atacado.</p>
+      <p style="margin:0"><a class="link-seta" href="/como-comprar">Como funciona o atacado <svg class="ico" aria-hidden="true"><use href="#i-seta"/></svg></a></p>
+    </div>
+  </div>
+</section>
+
+<section class="secao faixa visita quadriculado" aria-labelledby="titulo-visita">
+  <div class="miolo">
+    <div>
+      <h2 class="titulo-2" id="titulo-visita">Visite a <em>loja 263</em></h2>
+      <address style="margin-top: 1.25rem">{{ loja.endereco }}<br>{{ loja.cidade }}{% if loja.horario %}<br>{{ loja.horario }}{% endif %}</address>
+    </div>
+    <div class="acoes">
+      <a class="botao zap" href="{{ link_whatsapp(loja.whatsapp, 'Olá! Vim pelo site e quero tirar uma dúvida.') }}" target="_blank" rel="noopener">
+        <svg class="ico" aria-hidden="true"><use href="#i-zap"/></svg> Chamar no WhatsApp
+      </a>
+      <a class="botao linha" href="https://www.google.com/maps/search/?api=1&query={{ ('Mega Moda Shopping ' ~ loja.cidade) | urlencode }}" target="_blank" rel="noopener">
+        <svg class="ico" aria-hidden="true"><use href="#i-pino"/></svg> Como chegar
+      </a>
+      <a class="botao linha" href="https://www.instagram.com/{{ loja.instagram }}/" target="_blank" rel="noopener">
+        <svg class="ico" aria-hidden="true"><use href="#i-insta"/></svg> @{{ loja.instagram }}
+      </a>
+    </div>
+  </div>
+</section>
+{% endblock %}

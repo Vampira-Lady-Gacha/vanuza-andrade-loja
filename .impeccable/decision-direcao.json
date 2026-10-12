@@ -1,0 +1,123 @@
+{
+  "title": "Escolha o mundo visual da loja",
+  "question": "O sorteio indicou o Talão de Pedido. Fique com ele, escolha uma alternativa ou sorteie de novo.",
+  "options": [
+    {
+      "id": "assigned",
+      "label": "Talão de Pedido",
+      "kicker": "O SORTEIO",
+      "lineage": "bloco de pedido do atacado de Goiânia, com folha numerada, picote e cópia em carbono",
+      "thesis": "A loja inteira é um bloco de pedido: cada peça escolhida vira uma linha escrita no talão, e o talão destacado é a mensagem do WhatsApp.",
+      "palette": ["#f4efe6", "#23306b", "#5b2a86", "#e9d8a6", "#c8423b"],
+      "materials": ["papel de talão com pauta", "tinta de carbono azul", "picote e numeração tipográfica"],
+      "viewport": "À esquerda a foto da peça em destaque com preço varejo/atacado e os tamanhos P M G GG; à direita, o talão aberto já com o cabeçalho da loja (Mega Moda, loja 263), pronto para receber a primeira linha.",
+      "risk": "Se o papel e a pauta ficarem tímidos, vira só um carrinho bege; precisa do picote, do número da folha e da tinta azul com convicção.",
+      "raised": [
+        {"from": "challenger-app", "raise": "A cor de ação (roxo da marca) aparece só no que se aperta: adicionar ao talão e enviar no WhatsApp."},
+        {"from": "challenger-cutaway", "raise": "Cada foto leva etiquetas com fio indicando tecido e grade, como num desenho legendado."},
+        {"from": "challenger-terminal", "raise": "O estado do pedido se imprime no próprio talão (\"3 peças · preço de atacado ativo\"), sem selos e avisos soltos."},
+        {"from": "challenger-shader", "raise": "Uma palavra enorme por seção contra legendas mínimas: escala tipográfica com coragem."},
+        {"from": "challenger-nuvem", "raise": "Cor confinada a filetes e carimbos; o texto corrido fica em tinta neutra."}
+      ]
+    },
+    {
+      "id": "model-pick",
+      "label": "Folha de Molde",
+      "kicker": "ESCOLHA DO IMPECCABLE",
+      "lineage": "moldes de costura impressos, com graduação de tamanhos em linhas de cores",
+      "thesis": "A fabricação própria vira a linguagem: a página é uma folha de molde, e os tamanhos P, M, G, GG são contornos graduados que a cliente escolhe.",
+      "palette": ["#f6f1e7", "#2a2440", "#6a3d9a", "#d94f70", "#3f8f7a"],
+      "materials": ["papel manteiga de molde", "linhas de graduação coloridas", "piques e fio reto"],
+      "viewport": "A peça em destaque sobre a folha de molde; ao lado, a grade de tamanhos desenhada como contornos encaixados, cada um clicável, com o preço anotado na margem como num molde.",
+      "risk": "É a direção mais óbvia para uma confecção; corre o risco de parecer artesanato e esconder o preço se as linhas dominarem a foto."
+    },
+    {
+      "id": "challenger-app",
+      "label": "App de Consumo Acolhedor",
+      "verdict": "competitive",
+      "lineage": "superfícies de app de consumo com cartões suaves e uma cor de ação",
+      "thesis": "A loja se comporta como o app que a cliente já usa: cartões macios, rótulos de gente e uma barra inferior ao alcance do polegar.",
+      "palette": ["#f7f0ea", "#ffffff", "#2b2230", "#7b2fbe"],
+      "materials": ["cartões de canto arredondado", "fundo quente tingido", "barra inferior fixa"],
+      "viewport": "Coluna única de cartões de peças com foto grande, preço e tamanhos; barra inferior com Início, Catálogo, Talão e Loja.",
+      "case": "Funde bem e ganha em clareza para quem compra no celular; perde em identidade, porque qualquer loja do shopping poderia ter esse site.",
+      "risk": "Familiar demais: indistinguível de um template de loja virtual."
+    },
+    {
+      "id": "challenger-capa",
+      "label": "Capa de Seda com Cordão",
+      "verdict": "competitive",
+      "lineage": "moda transformável: capa de seda com canais de cordão",
+      "thesis": "Um cordão dourado é o controle: puxar o cordão franze o tecido e revela a peça, o tamanho e o preço.",
+      "palette": ["#141218", "#c9a14a", "#4a4458", "#8a8496"],
+      "materials": ["seda preta fosca", "cordão dourado", "pesponto grafite"],
+      "viewport": "Fundo de seda escura, a foto da peça surgindo do franzido; o cordão dourado corre pela página e marca o botão de pedido.",
+      "case": "A cliente se reconhece no tecido e no dourado do logo; perde em clareza e pesa no celular. Seda preta também contradiz o conforto do viscolinho.",
+      "risk": "Fica com cara de grife de luxo e de noite, longe do dia a dia da loja."
+    },
+    {
+      "id": "challenger-cutaway",
+      "label": "Corte Ilustrado Busytown",
+      "verdict": "declined",
+      "lineage": "ilustração em corte com tudo etiquetado",
+      "thesis": "O shopping em corte, com a confecção e a loja 263 sem parede.",
+      "palette": ["#f8f4ea", "#c0392b", "#f2c230", "#4f9a3a"],
+      "materials": ["guache chapado", "contorno marrom"],
+      "viewport": "Cena ilustrada contínua do corredor do shopping.",
+      "case": "Funde mal: a peça some na ilustração e a cliente quer ver roupa, não cenário.",
+      "risk": "Infantil para moda feminina.",
+      "kept": "Etiquetas com fio legendando cada foto."
+    },
+    {
+      "id": "challenger-terminal",
+      "label": "Terminal de Fósforo Verde",
+      "verdict": "declined",
+      "lineage": "terminal de computador antigo",
+      "thesis": "A loja como transcrição de terminal.",
+      "palette": ["#0b0f0b", "#39ff6a"],
+      "materials": ["vidro curvo", "brilho de fósforo"],
+      "viewport": "Transcrição verde rolando.",
+      "case": "Sem ligação com o público nem com o produto.",
+      "risk": "Ilegível para a cliente.",
+      "kept": "O estado se imprime no próprio documento, sem selos soltos."
+    },
+    {
+      "id": "challenger-shader",
+      "label": "Portal com Shader WebGL",
+      "verdict": "declined",
+      "lineage": "sites de estúdio experimental",
+      "thesis": "Tela cheia de shader com tipografia fina.",
+      "palette": ["#160a24", "#ff7ad9"],
+      "materials": ["granulado de filme", "malha animada"],
+      "viewport": "Uma palavra gigante sobre pixels vivos.",
+      "case": "Pesado no 4G e esconde as peças.",
+      "risk": "Lento e sem foco na venda.",
+      "kept": "Uma palavra enorme contra legendas mínimas."
+    },
+    {
+      "id": "challenger-nuvem",
+      "label": "Borda Iridescente de Nuvem",
+      "verdict": "declined",
+      "lineage": "difração em nuvens",
+      "thesis": "Branco de nuvem com franja pastel.",
+      "palette": ["#fbfbfd", "#5b6270", "#9be3c9", "#e8a3c4"],
+      "materials": ["branco amplo", "filete espectral"],
+      "viewport": "Margens brancas largas com filetes coloridos.",
+      "case": "Bonito, mas sem nada do mundo da cliente.",
+      "risk": "Frio e genérico.",
+      "kept": "Cor só em filetes; texto neutro."
+    }
+  ],
+  "reroll": {"registers": ["safer", "bolder"]},
+  "buildPath": {"value": "code", "toggle": false},
+  "canon": true,
+  "canonCard": {
+    "label": "O padrão das lojas de moda",
+    "thesis": "O que toda loja de roupa online entrega, feito com capricho.",
+    "palette": ["#ffffff", "#1a1a1a", "#5b2a86"],
+    "materials": ["grade limpa", "fotografia de produto"],
+    "viewport": "Banner com a peça, faixa de categorias e grade de produtos.",
+    "risk": "Indistinguível das outras lojas por definição."
+  },
+  "steer": true
+}

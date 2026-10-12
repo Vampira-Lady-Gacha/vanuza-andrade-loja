@@ -1,0 +1,127 @@
+{% extends "admin/base.html" %}
+{% block titulo %}{{ peca.nome if peca else 'Nova peça' }}{% endblock %}
+
+{% macro valor(campo, padrao='') -%}{{ dados.get(campo, padrao) if dados else padrao }}{%- endmacro %}
+
+{% block conteudo %}
+<div class="painel-cabeca">
+  <h1>{{ peca.nome if peca else 'Nova peça' }}</h1>
+  <div class="acoes">
+    <a class="botao linha" href="/admin/pecas">Voltar</a>
+    {% if peca %}<a class="botao linha" href="/peca/{{ peca.slug }}" target="_blank" rel="noopener">Ver na loja ↗</a>{% endif %}
+  </div>
+</div>
+
+{% if erro %}<p class="aviso erro" role="alert">{{ erro }}</p>{% endif %}
+
+<form class="bloco" method="post" action="{{ '/admin/pecas/' ~ peca.id if peca else '/admin/pecas/nova' }}">
+  <h2>Dados da peça</h2>
+  <input type="hidden" name="csrf" value="{{ csrf }}">
+  <div class="form-grade">
+    <label class="campo inteiro"><span>Nome</span>
+      <input class="entrada" name="nome" required maxlength="120" value="{{ valor('nome', peca.nome if peca else '') }}" placeholder="Ex.: Vestido Longo Mosaico Azul"></label>
+    <label class="campo"><span>Referência <small>(opcional)</small></span>
+      <input class="entrada" name="referencia" maxlength="40" value="{{ valor('referencia', peca.referencia if peca else '') }}" placeholder="Ex.: VA-104"></label>
+    <label class="campo"><span>Tecido</span>
+      <input class="entrada" name="tecido" maxlength="80" list="tecidos" value="{{ valor('tecido', peca.tecido if peca else '') }}" placeholder="Viscolinho">
+      <datalist id="tecidos"><option value="Viscose premium"><option value="Viscolinho"><option value="Viscose"><option value="Linho"></datalist></label>
+    <label class="campo"><span>Preço de varejo</span>
+      <input class="entrada" name="preco_varejo" inputmode="decimal" required value="{{ valor('preco_varejo', ('%.2f' | format(peca.preco_varejo / 100)).replace('.', ',') if peca else '') }}" placeholder="159,90"></label>
+    <label class="campo"><span>Preço de atacado <small>(vazio = sem atacado)</small></span>
+      <input class="entrada" name="preco_atacado" inputmode="decimal" value="{{ valor('preco_atacado', ('%.2f' | format(peca.preco_atacado / 100)).replace('.', ',') if peca and peca.preco_atacado else '') }}" placeholder="119,90">
+      <small>Vale a partir de {{ loja.atacado_minimo }} peças no pedido.</small></label>
+    <label class="campo"><span>Categoria</span>
+      <select class="entrada" name="categoria_id">
+        <option value="">Sem categoria</option>
+        {% set atual = (valor('categoria_id', peca.categoria_id if peca else '')) | string %}
+        {% for c in categorias %}<option value="{{ c.id }}" {% if atual == c.id | string %}selected{% endif %}>{{ c.nome }}</option>{% endfor %}
+      </select></label>
+    <div class="campo">
+      <span>Na loja</span>
+      <label class="marcar"><input type="checkbox" name="ativa" {% if (dados and dados.get('ativa')) or (not dados and (not peca or peca.ativa)) %}checked{% endif %}> Mostrar na loja</label>
+      <label class="marcar"><input type="checkbox" name="destaque" {% if (dados and dados.get('destaque')) or (not dados and peca and peca.destaque) %}checked{% endif %}> Destaque da página inicial <small>(só uma peça)</small></label>
+    </div>
+    <label class="campo inteiro"><span>Descrição</span>
+      <textarea class="entrada" name="descricao" rows="4" placeholder="Modelagem, comprimento, detalhes da estampa…">{{ valor('descricao', peca.descricao if peca else '') }}</textarea></label>
+  </div>
+  <p style="margin:1.25rem 0 0"><button class="botao" type="submit">{{ 'Salvar dados' if peca else 'Criar peça' }}</button></p>
+</form>
+
+{% if peca %}
+<section class="bloco" id="fotos">
+  <h2>Fotos <small>A primeira é a capa. Fotos em pé (4:5) ficam melhores.</small></h2>
+  {% if peca.fotos %}
+  <div class="fotos-adm">
+    {% for f in peca.fotos %}
+    <figure>
+      <img src="/media/{{ f.arquivo }}" alt="Foto {{ loop.index }}" loading="lazy">
+      <figcaption>
+        {% if not loop.first %}
+        <form method="post" action="/admin/pecas/{{ peca.id }}/fotos/{{ f.id }}/capa"><input type="hidden" name="csrf" value="{{ csrf }}"><button class="botao linha pequeno" type="submit">Usar como capa</button></form>
+        {% else %}<span class="etiqueta destaque">capa</span>{% endif %}
+        <form method="post" action="/admin/pecas/{{ peca.id }}/fotos/{{ f.id }}/apagar" data-confirmar="Apagar esta foto?"><input type="hidden" name="csrf" value="{{ csrf }}"><button class="botao perigo pequeno" type="submit">Apagar</button></form>
+      </figcaption>
+    </figure>
+    {% endfor %}
+  </div>
+  {% else %}
+  <p class="aviso atencao">Esta peça ainda não tem foto. Sem foto ela aparece na loja com um espaço vazio.</p>
+  {% endif %}
+  <form class="envio-fotos" method="post" action="/admin/pecas/{{ peca.id }}/fotos" enctype="multipart/form-data">
+    <input type="hidden" name="csrf" value="{{ csrf }}">
+    <label class="sr" for="fotos-arquivo">Escolher fotos</label>
+    <input id="fotos-arquivo" type="file" name="fotos" accept="image/jpeg,image/png,image/webp" multiple required>
+    <button class="botao" type="submit">Enviar fotos</button>
+  </form>
+</section>
+
+<form class="bloco" id="grade" method="post" action="/admin/pecas/{{ peca.id }}/grade" data-grade-form>
+  <h2>Cores, tamanhos e estoque <small>Quantidade de peças prontas em cada cor e tamanho</small></h2>
+  <input type="hidden" name="csrf" value="{{ csrf }}">
+  <label class="campo" style="max-width:24rem; margin-bottom:1rem"><span>Tamanhos da grade</span>
+    <input class="entrada" name="tamanhos" value="{{ tamanhos | join(', ') }}" data-tamanhos-grade>
+    <small>Separe por vírgula. Mudou a grade? Salve para atualizar a tabela.</small></label>
+  <div class="tabela-rolagem">
+    <table class="tabela grade-estoque">
+      <thead><tr><th>Cor</th>{% for t in tamanhos %}<th>{{ t }}</th>{% endfor %}<th>Tirar</th></tr></thead>
+      <tbody data-linhas-cor>
+        {% for cor, hexa in cores %}{% set i = loop.index0 %}
+        <tr>
+          <td><div class="cor-celula">
+            <input type="color" name="cor_hex" value="{{ hexa }}" aria-label="Amostra da cor {{ cor }}">
+            <input class="entrada" type="text" name="cor_nome" value="{{ cor }}" maxlength="40" aria-label="Nome da cor">
+            <input type="hidden" name="cor_original-{{ i }}" value="{{ cor }}">
+          </div></td>
+          {% for t in tamanhos %}
+          <td><input class="entrada" type="number" min="0" max="9999" name="estoque-{{ i }}-{{ t }}" value="{{ estoque.get((cor, t), 0) }}" aria-label="Estoque {{ cor }} {{ t }}"></td>
+          {% endfor %}
+          <td><label class="marcar" style="justify-content:center"><input type="checkbox" name="remover-{{ i }}" aria-label="Tirar a cor {{ cor }}"></label></td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  <template data-modelo-cor>
+    <tr>
+      <td><div class="cor-celula">
+        <input type="color" name="cor_hex" value="#5b2a86" aria-label="Amostra da cor">
+        <input class="entrada" type="text" name="cor_nome" placeholder="Nome da cor" maxlength="40" aria-label="Nome da cor">
+      </div></td>
+      {% for t in tamanhos %}<td><input class="entrada" type="number" min="0" max="9999" data-nome="estoque-__I__-{{ t }}" value="0" aria-label="Estoque {{ t }}"></td>{% endfor %}
+      <td></td>
+    </tr>
+  </template>
+  <div style="display:flex; flex-wrap:wrap; gap:0.6rem; margin-top:1rem">
+    <button class="botao linha" type="button" data-nova-cor><svg class="ico" aria-hidden="true"><use href="#i-mais"/></svg> Adicionar cor</button>
+    <button class="botao" type="submit">Salvar estoque</button>
+  </div>
+</form>
+
+<form class="bloco" method="post" action="/admin/pecas/{{ peca.id }}/apagar" data-confirmar="Apagar “{{ peca.nome }}” com fotos e estoque? Para só esconder da loja, desmarque “Mostrar na loja”.">
+  <h2>Apagar peça</h2>
+  <input type="hidden" name="csrf" value="{{ csrf }}">
+  <p style="margin:0 0 1rem; color:var(--tinta-2)">Para tirar da loja sem perder nada, desmarque “Mostrar na loja”. Apagar remove fotos e estoque; os pedidos antigos continuam com o registro.</p>
+  <button class="botao perigo" type="submit"><svg class="ico" aria-hidden="true"><use href="#i-lixo"/></svg> Apagar peça</button>
+</form>
+{% endif %}
+{% endblock %}

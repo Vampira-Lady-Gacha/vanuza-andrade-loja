@@ -1,0 +1,98 @@
+{% extends "base.html" %}
+
+{% block titulo %}Seu pedido · {{ loja.nome_loja }}{% endblock %}
+
+{% block conteudo %}
+<section class="secao faixa pedido-pagina" style="padding-top: clamp(2rem, 5vw, 4rem)" data-pagina-pedido data-minimo="{{ loja.atacado_minimo }}">
+  <div class="miolo">
+    <div>
+      <div class="cabeca-secao" style="margin-bottom: 2rem">
+        <h1 class="titulo-2">Seu <em>pedido</em></h1>
+      </div>
+
+      <div data-carregando><p class="nota">Carregando o pedido…</p></div>
+
+      <div class="pedido-vazio" data-vazio hidden>
+        <p class="titulo-3">Ainda não tem nenhuma peça aqui.</p>
+        <p class="texto" style="margin:0">Escolha o tamanho de uma peça e toque em “Pôr no pedido”. Ela aparece aqui, com o preço de varejo ou de atacado.</p>
+        <a class="botao" href="/catalogo">Ver o catálogo <svg class="ico" aria-hidden="true"><use href="#i-seta"/></svg></a>
+      </div>
+
+      <div data-cheio hidden>
+        <ul class="linhas" data-linhas aria-label="Peças do pedido"></ul>
+
+        <div class="totais">
+          <div>
+            <div class="fita" data-fita aria-hidden="true">
+              <div class="marcas" data-fita-marcas></div>
+              <div class="preenche"></div>
+            </div>
+            <p class="fita-legenda"><span data-fita-texto></span><span class="num" data-fita-conta></span></p>
+            <p class="nota" style="margin:0.35rem 0 0" data-fita-titulo></p>
+          </div>
+          <p class="economia" data-economia hidden></p>
+          <p class="total"><span>Total <span class="nota" data-modalidade></span></span> <b class="num" data-total></b></p>
+        </div>
+      </div>
+    </div>
+
+    <form class="folha-envio" data-form-envio hidden novalidate>
+      <h2 class="titulo-3">Enviar pelo WhatsApp</h2>
+      <p style="margin:0; color: var(--tinta-2)">O pedido chega pronto para a vendedora, que confirma o estoque, o pagamento e a entrega com você.</p>
+
+      <label class="campo"><span>Seu nome</span>
+        <input class="entrada" name="nome" autocomplete="name" required maxlength="120">
+      </label>
+      <label class="campo"><span>Seu WhatsApp</span>
+        <input class="entrada" name="whatsapp" type="tel" inputmode="tel" autocomplete="tel" placeholder="(62) 90000-0000" required maxlength="20">
+      </label>
+      <label class="campo"><span>Cidade</span>
+        <input class="entrada" name="cidade" autocomplete="address-level2" maxlength="80">
+      </label>
+
+      <fieldset class="opcoes-entrega">
+        <legend>Como vai receber</legend>
+        <label class="opcao"><input type="radio" name="entrega" value="retirada" checked>
+          <span>Retirada na loja<small>{{ loja.endereco }}</small></span></label>
+        <label class="opcao"><input type="radio" name="entrega" value="excursao">
+          <span>Excursão<small>Informe o nome da excursão e o box ou ponto.</small></span></label>
+        <label class="opcao"><input type="radio" name="entrega" value="transportadora">
+          <span>Transportadora<small>Informe a transportadora. O frete é combinado no WhatsApp.</small></span></label>
+      </fieldset>
+      <label class="campo" data-detalhe hidden><span data-detalhe-rotulo>Nome da excursão</span>
+        <input class="entrada" name="detalhe_entrega" maxlength="200">
+      </label>
+      <label class="campo"><span>Observação <small>(opcional)</small></span>
+        <textarea class="entrada" name="observacao" maxlength="2000" placeholder="Ex.: preciso para sexta-feira"></textarea>
+      </label>
+
+      <p class="erro-form" data-erro role="alert"></p>
+      <button class="botao zap largo" type="submit" data-enviar>
+        <svg class="ico" aria-hidden="true"><use href="#i-zap"/></svg> Enviar pedido pelo WhatsApp
+      </button>
+      <p class="nota" style="margin:0">Ao enviar, as peças ficam reservadas para você.</p>
+    </form>
+  </div>
+<template data-modelo-linha>
+  <li class="linha-pedido">
+    <a data-l-link tabindex="-1"><img data-l-foto src="/static/img/logo-instagram.jpg" alt="" width="76" height="95"></a>
+    <div>
+      <a class="nome" data-l-link data-l-nome></a>
+      <p class="det"><span><i data-l-amostra></i><span data-l-cor></span></span><span data-l-tam></span></p>
+    </div>
+    <p class="valor"><span data-l-subtotal></span><small data-l-unit></small></p>
+    <div class="controles">
+      <div class="qtd">
+        <button type="button" data-l-menos aria-label="Diminuir"><svg class="ico"><use href="#i-menos"/></svg></button>
+        <input type="number" inputmode="numeric" min="1" max="999" data-l-qtd aria-label="Quantidade">
+        <button type="button" data-l-mais aria-label="Aumentar"><svg class="ico"><use href="#i-mais"/></svg></button>
+      </div>
+      <button type="button" class="tirar" data-l-tirar><svg class="ico" aria-hidden="true"><use href="#i-lixo"/></svg> Tirar</button>
+    </div>
+    <p class="alerta" data-l-alerta hidden></p>
+  </li>
+</template>
+</section>
+
+
+{% endblock %}

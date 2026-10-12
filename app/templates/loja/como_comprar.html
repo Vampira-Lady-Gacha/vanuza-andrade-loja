@@ -1,0 +1,41 @@
+{% extends "base.html" %}
+
+{% block titulo %}Como comprar · {{ loja.nome_loja }}{% endblock %}
+
+{% block conteudo %}
+<section class="secao faixa" style="padding-top: clamp(2rem, 5vw, 4rem)">
+  <div class="miolo" style="display:grid; gap: clamp(2rem, 5vw, 4rem)">
+    <h1 class="titulo-2" style="max-width: 14ch">Como <em>comprar</em></h1>
+
+    <ol class="passos">
+      <li>
+        <h3>Escolha pela linha</h3>
+        <p>Cada peça mostra em volta da foto as linhas dos tamanhos que temos em estoque, como num molde: P contínua, M tracejada, G traço e ponto, GG pontilhada. Escolha a cor, o tamanho e a quantidade e toque em “Pôr no pedido”.</p>
+      </li>
+      <li>
+        <h3>Varejo ou atacado</h3>
+        <p>{{ loja.texto_atacado }} Hoje o mínimo é de {{ loja.atacado_minimo }} peças. O pedido mostra a fita métrica enchendo e troca o preço sozinho quando você chega lá.</p>
+      </li>
+      <li>
+        <h3>Envie no WhatsApp</h3>
+        <p>Preencha nome, WhatsApp e a forma de entrega. O pedido vai pronto para o WhatsApp da loja, com peças, tamanhos, cores e total. As peças ficam reservadas e a vendedora confirma o pagamento com você.</p>
+      </li>
+      <li>
+        <h3>Entrega</h3>
+        <p>{{ loja.texto_entrega }}</p>
+      </li>
+      {% if loja.texto_trocas %}
+      <li>
+        <h3>Trocas</h3>
+        <p>{{ loja.texto_trocas }}</p>
+      </li>
+      {% endif %}
+    </ol>
+
+    <div style="display:flex; flex-wrap:wrap; gap:0.75rem">
+      <a class="botao" href="/catalogo">Ver o catálogo <svg class="ico" aria-hidden="true"><use href="#i-seta"/></svg></a>
+      <a class="botao zap" href="{{ link_whatsapp(loja.whatsapp, 'Olá! Vim pelo site e quero tirar uma dúvida.') }}" target="_blank" rel="noopener"><svg class="ico" aria-hidden="true"><use href="#i-zap"/></svg> Tirar dúvida no WhatsApp</a>
+    </div>
+  </div>
+</section>
+{% endblock %}

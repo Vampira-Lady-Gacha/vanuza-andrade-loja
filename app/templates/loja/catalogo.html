@@ -1,0 +1,57 @@
+{% extends "base.html" %}
+{% from "_macros.html" import peca_card, classe_linha, amostra_linha %}
+
+{% block titulo %}{{ cat_atual.nome if cat_atual else 'Catálogo' }} · {{ loja.nome_loja }}{% endblock %}
+
+{% block conteudo %}
+<section class="secao faixa" style="padding-top: clamp(2rem, 5vw, 4rem)">
+  <div class="miolo">
+    <div class="cabeca-secao">
+      <h1 class="titulo-2">{% if cat_atual %}{{ cat_atual.nome }}{% else %}Catálogo{% endif %}</h1>
+      <p class="num">{{ pecas | length }} {{ 'peça' if pecas | length == 1 else 'peças' }}{% if filtro.tamanho %} com {{ filtro.tamanho }} em estoque{% endif %}{% if filtro.q %} para “{{ filtro.q }}”{% endif %}</p>
+    </div>
+
+    <form class="filtros" method="get" action="/catalogo">
+      {% if categorias | length > 1 %}
+      <nav class="abas" aria-label="Categorias">
+        <a href="/catalogo{% if filtro.tamanho %}?tamanho={{ filtro.tamanho }}{% endif %}" {% if not cat_atual %}aria-current="true"{% endif %}>Tudo</a>
+        {% for c in categorias %}
+        <a href="/catalogo?categoria={{ c.slug }}{% if filtro.tamanho %}&tamanho={{ filtro.tamanho }}{% endif %}" {% if cat_atual and cat_atual.id == c.id %}aria-current="true"{% endif %}>{{ c.nome }}</a>
+        {% endfor %}
+      </nav>
+      {% endif %}
+      {% if filtro.categoria %}<input type="hidden" name="categoria" value="{{ filtro.categoria }}">{% endif %}
+      <div class="linha">
+        <div class="busca">
+          <label class="sr" for="busca">Buscar peça</label>
+          <input class="entrada" id="busca" type="search" name="q" value="{{ filtro.q }}" placeholder="Buscar por nome, tecido ou referência">
+          <button class="botao" type="submit" aria-label="Buscar" style="min-height:44px; padding: 0 1rem"><svg class="ico"><use href="#i-busca"/></svg></button>
+        </div>
+        <label class="sr" for="tamanho">Tamanho</label>
+        <select class="entrada" id="tamanho" name="tamanho" data-auto-enviar>
+          <option value="">Todos os tamanhos</option>
+          {% for t in ['P', 'M', 'G', 'GG'] %}<option value="{{ t }}" {% if filtro.tamanho == t %}selected{% endif %}>Tem {{ t }}</option>{% endfor %}
+        </select>
+        <label class="sr" for="ordem">Ordenar</label>
+        <select class="entrada" id="ordem" name="ordem" data-auto-enviar>
+          <option value="novidades" {% if filtro.ordem == 'novidades' %}selected{% endif %}>Novidades</option>
+          <option value="menor-preco" {% if filtro.ordem == 'menor-preco' %}selected{% endif %}>Menor preço</option>
+          <option value="maior-preco" {% if filtro.ordem == 'maior-preco' %}selected{% endif %}>Maior preço</option>
+        </select>
+      </div>
+    </form>
+
+    {% if pecas %}
+    <div class="folha-pecas">
+      {% for p in pecas %}{{ peca_card(p, loja) }}{% endfor %}
+    </div>
+    {% else %}
+    <div class="vazio">
+      <p class="titulo-3">Nenhuma peça encontrada.</p>
+      <p>Tente outro tamanho ou limpe a busca. Se procura um modelo específico, pergunte no WhatsApp: pode estar chegando.</p>
+      <a class="botao linha" href="/catalogo">Limpar filtros</a>
+    </div>
+    {% endif %}
+  </div>
+</section>
+{% endblock %}

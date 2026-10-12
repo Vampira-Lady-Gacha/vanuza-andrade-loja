@@ -1,0 +1,32 @@
+# Blueprint do Render: cria o serviço web com disco persistente para o banco e as fotos.
+# No painel do Render: New > Blueprint > escolha este repositório.
+services:
+  - type: web
+    name: vanuza-andrade-loja
+    runtime: python
+    # O disco persistente só existe em planos pagos. Sem ele, banco e fotos somem a cada deploy.
+    plan: starter
+    region: virginia
+    buildCommand: pip install uv && uv sync --frozen --no-dev
+    startCommand: .venv/bin/uvicorn app.main:app --host 0.0.0.0 --port $PORT --proxy-headers --forwarded-allow-ips="*"
+    healthCheckPath: /robots.txt
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.12.10
+      - key: SECRET_KEY
+        generateValue: true
+      - key: LOJA_DADOS
+        value: /var/data
+      - key: COOKIE_SEGURO
+        value: "1"
+      # Preenchidos no painel do Render na hora de criar (não ficam no repositório)
+      - key: ADMIN_EMAIL
+        sync: false
+      - key: ADMIN_SENHA
+        sync: false
+      - key: URL_PUBLICA
+        sync: false
+    disk:
+      name: dados
+      mountPath: /var/data
+      sizeGB: 1

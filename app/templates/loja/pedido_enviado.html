@@ -1,0 +1,41 @@
+{% extends "base.html" %}
+
+{% block titulo %}Pedido {{ pedido.codigo }} · {{ loja.nome_loja }}{% endblock %}
+{% block cabeca %}<meta name="robots" content="noindex">{% endblock %}
+
+{% block conteudo %}
+<section class="secao faixa enviado quadriculado" style="padding-top: clamp(2rem, 5vw, 4rem)">
+  <div class="miolo">
+    <div style="display:grid; gap:1rem">
+      <h1 class="titulo-2">Falta só <em>um toque.</em></h1>
+      <p class="nota" style="margin:0">Pedido {{ pedido.codigo }} · {{ STATUS_PEDIDO[pedido.status] }}</p>
+      <p class="texto" style="margin:0">Seu pedido foi registrado e as peças estão reservadas. Abra o WhatsApp e envie a mensagem que já está pronta: a vendedora confirma o pagamento e a entrega com você.</p>
+    </div>
+    <div style="display:flex; flex-wrap:wrap; gap:0.75rem">
+      <a class="botao zap" href="{{ url_whatsapp }}" target="_blank" rel="noopener" data-abrir-zap>
+        <svg class="ico" aria-hidden="true"><use href="#i-zap"/></svg> Abrir o WhatsApp com o pedido
+      </a>
+      <a class="botao linha" href="/catalogo">Continuar olhando</a>
+    </div>
+
+    <div class="recibo">
+      <table>
+        <caption class="nota" style="text-align:left; padding-bottom:0.75rem">Resumo · preço de {{ 'atacado' if pedido.atacado else 'varejo' }}</caption>
+        <tbody>
+          {% for item in pedido.itens %}
+          <tr>
+            <td>{{ item.quantidade }}× {{ item.nome }}<br><span style="color:var(--tinta-2)">{{ item.cor }} · {{ item.tamanho }} · {{ item.preco_unitario | reais }} cada</span></td>
+            <td>{{ item.subtotal | reais }}</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+        <tfoot>
+          <tr><td>Total · {{ pedido.quantidade_pecas }} peças</td><td>{{ pedido.total | reais }}</td></tr>
+        </tfoot>
+      </table>
+      <p style="margin:1rem 0 0; color:var(--tinta-2); font-size:0.95rem">{{ ENTREGAS[pedido.entrega] }}{% if pedido.detalhe_entrega %} · {{ pedido.detalhe_entrega }}{% endif %}</p>
+    </div>
+    <p class="nota" style="margin:0">Guarde este link para consultar o pedido depois.</p>
+  </div>
+</section>
+{% endblock %}

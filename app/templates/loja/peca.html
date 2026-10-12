@@ -1,0 +1,95 @@
+{% extends "base.html" %}
+{% from "_macros.html" import molde, precos, peca_card, form_compra %}
+
+{% block titulo %}{{ peca.nome }} · {{ loja.nome_loja }}{% endblock %}
+{% block descricao %}{{ peca.nome }}{% if peca.tecido %} em {{ peca.tecido | lower }}{% endif %}. {{ peca.preco_varejo | reais }} no varejo{% if peca.preco_atacado %}, {{ peca.preco_atacado | reais }} no atacado{% endif %}. Tamanhos {{ peca.tamanhos | join(', ') }}.{% endblock %}
+{% block og_imagem %}{% if peca.foto_capa %}<meta property="og:image" content="{{ url_publica }}/media/{{ peca.foto_capa.arquivo }}">{% endif %}{% endblock %}
+
+{% block cabeca %}
+{% set imagens = [] %}{% for f in peca.fotos %}{% set _ = imagens.append(url_publica ~ '/media/' ~ f.arquivo) %}{% endfor %}
+<script type="application/ld+json">
+{{ {
+  "@context": "https://schema.org",
+  "@type": "Product",
+  "name": peca.nome,
+  "description": peca.descricao,
+  "sku": peca.referencia or peca.slug,
+  "material": peca.tecido,
+  "brand": {"@type": "Brand", "name": loja.nome_loja},
+  "image": imagens,
+  "offers": {
+    "@type": "Offer",
+    "priceCurrency": "BRL",
+    "price": "%.2f" | format(peca.preco_varejo / 100),
+    "availability": "https://schema.org/InStock" if peca.estoque_total > 0 else "https://schema.org/OutOfStock"
+  }
+} | tojson }}
+</script>
+{% endblock %}
+
+{% block conteudo %}
+<section class="secao faixa peca-pagina quadriculado" style="padding-top: clamp(1.5rem, 4vw, 3rem)">
+  <div class="miolo">
+    <div class="galeria">
+      {% set margem = 'Varejo ' ~ (peca.preco_varejo | reais) ~ ((' · atacado ' ~ (peca.preco_atacado | reais) ~ ' a partir de ' ~ loja.atacado_minimo ~ ' peças') if peca.preco_atacado else '') %}
+      {{ molde(peca, prioridade=True, preco_margem=margem) }}
+      {% if peca.fotos | length > 1 %}
+      <div class="miniaturas" role="group" aria-label="Fotos da peça">
+        {% for f in peca.fotos %}
+        <button type="button" data-miniatura="/media/{{ f.arquivo }}" aria-pressed="{{ 'true' if loop.first else 'false' }}" aria-label="Foto {{ loop.index }} de {{ peca.fotos | length }}">
+          <img src="/media/{{ f.arquivo }}" alt="" loading="lazy" width="76" height="95">
+        </button>
+        {% endfor %}
+      </div>
+      {% endif %}
+    </div>
+
+    <div class="ficha-peca">
+      <div style="display:grid; gap:0.75rem">
+        <h1 class="titulo-2">{{ peca.nome }}</h1>
+        {{ precos(peca, loja.atacado_minimo) }}
+        <p class="nota" style="margin:0">
+          <a href="/catalogo{% if peca.categoria %}?categoria={{ peca.categoria.slug }}{% endif %}">{{ peca.categoria.nome if peca.categoria else 'Catálogo' }}</a>
+          {% if peca.referencia %} · Ref. {{ peca.referencia }}{% endif %}{% if peca.tecido %} · {{ peca.tecido }}{% endif %}
+        </p>
+      </div>
+
+      {% if peca.estoque_total > 0 %}
+      {{ form_compra(peca, loja) }}
+      {% else %}
+      <div style="display:grid; gap:1rem">
+        <p class="titulo-3">Esgotada no momento.</p>
+        <a class="botao zap" href="{{ link_whatsapp(loja.whatsapp, 'Olá! A peça ' ~ peca.nome ~ (' (ref. ' ~ peca.referencia ~ ')' if peca.referencia else '') ~ ' vai voltar?') }}" target="_blank" rel="noopener">
+          <svg class="ico" aria-hidden="true"><use href="#i-zap"/></svg> Avise quando voltar
+        </a>
+      </div>
+      {% endif %}
+
+      {% if peca.descricao %}<p class="descricao">{{ peca.descricao }}</p>{% endif %}
+
+      <ul class="lista-info">
+        <li><svg class="ico" aria-hidden="true"><use href="#i-tesoura"/></svg><span>Fabricação própria {{ loja.nome_loja }}.</span></li>
+        <li><svg class="ico" aria-hidden="true"><use href="#i-caminhao"/></svg><span>{{ loja.texto_entrega }}</span></li>
+        {% if loja.texto_trocas %}<li><svg class="ico" aria-hidden="true"><use href="#i-troca"/></svg><span>{{ loja.texto_trocas }}</span></li>{% endif %}
+        <li><svg class="ico" aria-hidden="true"><use href="#i-zap"/></svg><span>Dúvida sobre medidas? <a href="{{ link_whatsapp(loja.whatsapp, 'Olá! Quero saber as medidas do ' ~ peca.nome ~ (' (ref. ' ~ peca.referencia ~ ')' if peca.referencia else '') ~ '.') }}" target="_blank" rel="noopener">Pergunte no WhatsApp</a>.</span></li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+{% if outras %}
+<section class="secao faixa" aria-labelledby="titulo-outras">
+  <div class="miolo">
+    <div class="cabeca-secao"><h2 class="titulo-2" id="titulo-outras">Combina <em>também</em></h2></div>
+    <div class="folha-pecas relacionadas">{% for p in outras %}{{ peca_card(p, loja) }}{% endfor %}</div>
+  </div>
+</section>
+{% endif %}
+
+{% if peca.estoque_total > 0 %}
+<div class="barra-celular" data-barra-celular aria-hidden="true">
+  <span class="p">{{ peca.preco_varejo | reais }}</span>
+  <a class="botao" href="#conteudo" data-ir-compra tabindex="-1">Escolher tamanho</a>
+</div>
+{% endif %}
+{% endblock %}

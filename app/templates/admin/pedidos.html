@@ -1,0 +1,42 @@
+{% extends "admin/base.html" %}
+{% block titulo %}Pedidos{% endblock %}
+
+{% block conteudo %}
+<div class="painel-cabeca"><h1>Pedidos</h1></div>
+
+<section class="bloco">
+  <nav class="filtro-status" aria-label="Filtrar por situação">
+    <a href="/admin/pedidos" {% if not status %}aria-current="true"{% endif %}>Todos</a>
+    {% for chave, nome in STATUS_PEDIDO.items() %}
+    <a href="/admin/pedidos?status={{ chave }}" {% if status == chave %}aria-current="true"{% endif %}>{{ nome }} <span class="num">{{ contagem.get(chave, 0) }}</span></a>
+    {% endfor %}
+  </nav>
+  <form method="get" class="busca" style="margin-bottom:1rem; max-width:28rem">
+    {% if status %}<input type="hidden" name="status" value="{{ status }}">{% endif %}
+    <label class="sr" for="q">Buscar</label>
+    <input class="entrada" id="q" type="search" name="q" value="{{ q }}" placeholder="Nome, código ou WhatsApp">
+    <button class="botao" type="submit" aria-label="Buscar"><svg class="ico"><use href="#i-busca"/></svg></button>
+  </form>
+  {% if pedidos %}
+  <div class="tabela-rolagem">
+    <table class="tabela">
+      <thead><tr><th>Pedido</th><th>Cliente</th><th>Entrega</th><th>Situação</th><th class="dir">Peças</th><th class="dir">Total</th></tr></thead>
+      <tbody>
+      {% for p in pedidos %}
+        <tr>
+          <td><a href="/admin/pedidos/{{ p.id }}">{{ p.codigo }}</a><br><small style="color:var(--tinta-2)">{{ p.criado_em.strftime('%d/%m/%Y %H:%M') }}</small></td>
+          <td>{{ p.nome }}<br><small style="color:var(--tinta-2)">{{ p.whatsapp | telefone }}{% if p.cidade %} · {{ p.cidade }}{% endif %}</small></td>
+          <td>{{ ENTREGAS[p.entrega] }}</td>
+          <td><span class="etiqueta {{ p.status }}">{{ STATUS_PEDIDO[p.status] }}</span></td>
+          <td class="dir">{{ p.quantidade_pecas }}</td>
+          <td class="dir">{{ p.total | reais }}{% if p.atacado %}<br><small class="etiqueta">atacado</small>{% endif %}</td>
+        </tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% else %}
+  <p style="margin:0; color:var(--tinta-2)">Nenhum pedido{% if status %} com essa situação{% endif %}{% if q %} para “{{ q }}”{% endif %}.</p>
+  {% endif %}
+</section>
+{% endblock %}

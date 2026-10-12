@@ -1,0 +1,41 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex, nofollow">
+  <title>{% block titulo %}Painel{% endblock %} · {{ loja.nome_loja }}</title>
+  <link rel="icon" href="/static/img/logo-instagram.jpg">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,400..800&family=Bodoni+Moda:opsz,wght@6..96,400..700&display=swap">
+  <link rel="stylesheet" href="/static/css/loja.css?v=9">
+  <link rel="stylesheet" href="/static/css/admin.css?v=3">
+</head>
+<body class="painel-corpo">
+  {% include "_icones.html" %}
+  {% set caminho = request.url.path %}
+  <div class="painel">
+    <aside class="painel-lado">
+      <a class="marca" href="/admin"><img src="/static/img/logo-instagram.jpg" alt="" width="36" height="36"><span>Painel</span></a>
+      <nav class="painel-nav" aria-label="Painel">
+        <a href="/admin" {% if caminho == '/admin' %}aria-current="page"{% endif %}><svg class="ico" aria-hidden="true"><use href="#i-check"/></svg>Início</a>
+        <a href="/admin/pedidos" {% if caminho.startswith('/admin/pedidos') %}aria-current="page"{% endif %}><svg class="ico" aria-hidden="true"><use href="#i-sacola"/></svg>Pedidos</a>
+        <a href="/admin/pecas" {% if caminho.startswith('/admin/pecas') %}aria-current="page"{% endif %}><svg class="ico" aria-hidden="true"><use href="#i-tesoura"/></svg>Peças</a>
+        <a href="/admin/categorias" {% if caminho.startswith('/admin/categorias') %}aria-current="page"{% endif %}><svg class="ico" aria-hidden="true"><use href="#i-troca"/></svg>Categorias</a>
+        <a href="/admin/configuracoes" {% if caminho.startswith('/admin/configuracoes') %}aria-current="page"{% endif %}><svg class="ico" aria-hidden="true"><use href="#i-pino"/></svg>Loja</a>
+      </nav>
+      <div class="rodape-lado">
+        <a href="/" target="_blank" rel="noopener">Ver a loja ↗</a>
+        <a href="/admin/conta">Minha senha</a>
+        <form method="post" action="/admin/sair"><input type="hidden" name="csrf" value="{{ csrf }}"><button type="submit">Sair</button></form>
+      </div>
+    </aside>
+    <main class="painel-principal">
+      {% if aviso %}<p class="aviso" role="status"><svg class="ico" aria-hidden="true"><use href="#i-check"/></svg>{{ aviso }}</p>{% endif %}
+      {% block conteudo %}{% endblock %}
+    </main>
+  </div>
+  <script src="/static/js/admin.js?v=1" defer></script>
+</body>
+</html>
