@@ -49,7 +49,7 @@ uv run pytest
 
 ## Publicar
 
-No Render, use o `render.yaml` deste repositório: **New → Blueprint**, escolha o repositório e preencha `ADMIN_EMAIL`, `ADMIN_SENHA` e `URL_PUBLICA`. Ele cria o serviço no plano Starter com disco persistente em `/var/data` (sem disco, banco e fotos somem a cada deploy).
+No Render, use o `render.yaml` deste repositório: **New → Blueprint**, escolha o repositório e preencha `ADMIN_EMAIL`, `ADMIN_SENHA` e `URL_PUBLICA`. Hoje ele está no **plano gratuito, só para teste**: sem disco, banco, pedidos e fotos enviadas se apagam a cada deploy ou reinício, e o serviço dorme sem visitas. Para vender, troque para o plano Starter com disco (instruções no próprio `render.yaml`).
 
 Em outro serviço que rode Python (Railway, Fly.io, uma VPS), configure as variáveis de ambiente:
 
